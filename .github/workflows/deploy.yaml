@@ -36,7 +36,3 @@ jobs:
               kubectl apply -f /path/to/web-app-service.yaml
               
               echo " Deployment Completed!"
-      # - name: Deploy to Kubernetes
-      #   run: |
-      #     export KUBECONFIG=~/.kube/config
-      #     kubectl --kubeconfig=${HOME}/.kube/config get nodes --insecure-skip-tls-verify
