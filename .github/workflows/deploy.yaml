@@ -27,9 +27,14 @@ jobs:
       
       - name: Setup SSH Tunnel
         run: |
-          ssh -N -L 6443:172.30.237.126:6443 aman1@172.30.237.126 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa &
-
-      - name: Deploy to Kubernetes
-        run: |
-          export KUBECONFIG=~/.kube/config
-          kubectl --kubeconfig=${HOME}/.kube/config get nodes --insecure-skip-tls-verify
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa aman1@172.30.237.126 << 'EOF'
+                      echo "Running inside SSH..."
+                      kubectl get nodes
+                      kubectl apply -f /path/to/web-app.yaml
+                      kubectl apply -f /path/to/web-app-service.yaml
+                      kubectl get pods -n kube-system
+                    EOF
+      # - name: Deploy to Kubernetes
+      #   run: |
+      #     export KUBECONFIG=~/.kube/config
+      #     kubectl --kubeconfig=${HOME}/.kube/config get nodes --insecure-skip-tls-verify
