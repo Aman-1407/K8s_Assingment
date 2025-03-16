@@ -25,8 +25,6 @@ jobs:
           export KUBECONFIG=kubeconfig.yaml
           chmod 666 kubeconfig.yaml 
           ls -l kubeconfig.yaml
-          sudo systemctl restart kubelet
-          sudo systemctl status kubelet
           kubectl --kubeconfig=kubeconfig.yaml get nodes
           kubectl --kubeconfig=kubeconfig.yaml get pods
           kubectl --kubeconfig=kubeconfig.yaml config view
