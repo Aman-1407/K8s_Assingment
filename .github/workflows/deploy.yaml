@@ -26,38 +26,5 @@ jobs:
           kubectl config view 
           kubectl cluster-info
           kubectl --kubeconfig=kubeconfig.yaml apply -f web-app.yaml
-          kubectl --kubeconfig=kubeconfig.yaml apply -f web-app-servicename: CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v2
-        with:
-          context: ./demo-app
-          push: true
-          tags: aman1407/myapp:latest
-
-      - name: Deploy to Kubernetes
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          echo "$KUBE_CONFIG" | base64 --decode > kubeconfig.yaml
-          kubectl --kubeconfig=kubeconfig.yaml apply -f web-app.yaml
-          kubectl --kubeconfig=kubeconfig.yaml apply -f web-app-service.yaml.yaml
+          kubectl --kubeconfig=kubeconfig.yaml apply -f web-app-service.yaml
 
