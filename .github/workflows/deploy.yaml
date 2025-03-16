@@ -19,7 +19,16 @@ jobs:
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker push aman1407/myapp:latest
 
-      - uses: tale/kubectl-action@v1
-        with:
-            base64-kube-config: ${{ secrets.KUBE_CONFIG }}
-      - run: kubectl get pods --insecure-skip-tls-verify 
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+      
+      - name: Setup SSH Tunnel
+        run: |
+          ssh -N -L 6443:172.30.237.126:6443 aman1@172.30.237.126 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa &
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl get pods --insecure-skip-tls-verify 
