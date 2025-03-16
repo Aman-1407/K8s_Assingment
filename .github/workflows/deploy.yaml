@@ -23,7 +23,8 @@ jobs:
         run: |
           echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
-          export KUBECONFIG=kubeconfig.yaml
+          chmod 600 kubeconfig.yaml 
+          ls -l kubeconfig.yaml
           kubectl --kubeconfig=kubeconfig.yaml config view
           kubectl --kubeconfig=kubeconfig.yaml cluster-info
           kubectl --kubeconfig=kubeconfig.yaml apply -f web-app.yaml
