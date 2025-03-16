@@ -31,4 +31,5 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
+          export KUBECONFIG=~/.kube/config
           kubectl get pods --insecure-skip-tls-verify 
