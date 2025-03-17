@@ -10,8 +10,8 @@ This project demonstrates how to deploy a simple web application on a **3-node b
 
 Before proceeding, ensure you have the following:
 
-- **Ubuntu 22.04** (or later) with **WSL2** (if on Windows)
-- **Docker Desktop with Kubernetes enabled**
+- **Amazon linux Ami**
+- **Docker with Kubernetes enabled**
 - **kubectl** (CLI tool for Kubernetes)
 - **kubeadm, kubelet, kubectl** installed
 - **A GitHub repository with GitHub Actions enabled**
@@ -24,7 +24,9 @@ Before proceeding, ensure you have the following:
 ### **1️⃣ Initialize the Master Node**
 
 ```bash
-sudo kubeadm init --control-plane-endpoint=master.k8s.cluster --pod-network-cidr=10.244.0.0/16
+sudo swapoff -a ##Prevent Kubernetes from relying on swap space by running
+
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 ```
 
 - Copy the `kubeadm join` command for worker nodes.
@@ -93,12 +95,11 @@ Go to **GitHub Repository → Settings → Secrets and Variables → Actions**, 
 
 | Secret Name      | Value |
 |-----------------|---------------------------|
-| SSH_PRIVATE_KEY | Contents of `~/.ssh/id_rsa` (Private Key) |
+| SSH_PRIVATE_KEY | Contents of `~/K3S.pem` (Private Key) |
 | HOST           | Your server’s public IP (`curl ifconfig.me`) |
 | USERNAME       | Your Linux username (e.g., `ubuntu` or `root`) |
 | DOCKER_USERNAME | Your Docker Hub username |
 | DOCKER_PASSWORD | Your Docker Hub password |
-| KUBE_CONFIG    | Contents of `~/.kube/config` (Base64 encoded) |
 
 To get the Base64 encoded Kubernetes config, run:
 
@@ -150,10 +151,10 @@ kubectl get pods -A
 kubectl get svc -A
 ```
 
-### **3️⃣ Check If Port 2200 is Open for SSH**
+### **3️⃣ Check If Port 22 is Open for SSH**
 
 ```bash
-nc -zv <your-public-ip> 2200
+nc -zv <your-public-ip> 22
 ```
 
 ### **4️⃣ Restart SSH Service (If Needed)**
