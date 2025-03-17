@@ -32,7 +32,7 @@ jobs:
               kubectl get nodes
               
               echo " Applying Kubernetes Deployment..."
-              kubectl apply -f web-app.yaml
-              kubectl apply -f web-app-service.yaml
+              kubectl apply -f /home/ec2-user/K8s_Assingment/web-app.yaml
+              kubectl apply -f /home/ec2-user/K8s_Assingment/web-app-service.yaml
               
               echo " Deployment Completed!"
