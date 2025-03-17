@@ -28,6 +28,10 @@ jobs:
           port: 22
           script: |
               echo " Connected to Kubernetes Master Node!"
+              echo "Pulling latest code from GitHub..."
+              cd /home/ec2-user/K8s_Assingment
+              git pull origin main
+              
               echo " Checking Kubernetes Node Status..."
               kubectl get nodes
               

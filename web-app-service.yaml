@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: webapp-service
 spec:
-  type: NodePort  # Change LoadBalancer to NodePort
+  type: NodePort 
   selector:
     app: webapp
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-      nodePort: 30080  # Choose a port in the range 30000-32767
+      nodePort: 30080 
