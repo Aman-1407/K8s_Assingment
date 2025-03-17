@@ -25,7 +25,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 2200
+          port: 22
           script: |
               echo " Connected to Kubernetes Master Node!"
               echo " Checking Kubernetes Node Status..."
