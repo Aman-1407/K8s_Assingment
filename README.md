@@ -10,16 +10,53 @@ This project demonstrates how to deploy a simple web application on a **3-node b
 
 Before proceeding, ensure you have the following:
 
-- **Amazon linux Ami**
-- **Docker with Kubernetes enabled**
-- **kubectl** (CLI tool for Kubernetes)
-- **kubeadm, kubelet, kubectl** installed
+- **Three Amazon Linux AMI instances** (One master node, two worker nodes)
+- **Docker installed**
+- **Kubernetes (kubeadm, kubelet, kubectl) installed**
 - **A GitHub repository with GitHub Actions enabled**
+- **A `.pem` file for SSH access**
 - **A Datadog API key** (for monitoring)
 
 ---
 
-## **🛠️ Step 1: Set Up Kubernetes Cluster**
+## **🛠️ Step 1: Install Docker and Kubernetes on AWS Instances**
+
+### **1️⃣ Update Packages**
+
+```bash
+sudo yum update -y
+```
+
+### **2️⃣ Install Docker**
+
+```bash
+sudo yum install docker -y
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+### **3️⃣ Install Kubernetes Components**
+
+```bash
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+```
+
+```bash
+sudo yum install -y kubelet kubeadm kubectl
+sudo systemctl enable kubelet
+sudo systemctl start kubelet
+```
+
+---
+
+## **🛠️ Step 2: Set Up Kubernetes Cluster**
 
 ### **1️⃣ Initialize the Master Node**
 
@@ -38,17 +75,16 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-### **2️⃣ Join Worker Nodes**
-
-On each worker node, run the `kubeadm join` command copied from step 1.
-
-### **3️⃣ Install a Pod Network (Flannel)**
+### **2️⃣ Install a Pod Network (Flannel)**
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 ```
+### **3️⃣ Join Worker Nodes**
 
-### **4️⃣ Verify Cluster Setup**
+On each worker node, run the `kubeadm join` command copied from step 1.
+
+### **4️⃣ Verify Cluster Setup on Master Node**
 
 ```bash
 kubectl get nodes
@@ -58,7 +94,7 @@ kubectl get nodes
 
 ---
 
-## **🖥️ Step 2: Deploy the Web Application**
+## **🖥️ Step 3: Deploy the Web Application**
 
 ### **1️⃣ Apply Kubernetes Manifests**
 
@@ -78,16 +114,11 @@ kubectl get svc
 
 ---
 
-## **🔄 Step 3: Set Up CI/CD with GitHub Actions**
+## **🔄 Step 4: Set Up CI/CD with GitHub Actions**
 
-### **1️⃣ Generate an SSH Key for GitHub Actions**
+### **1️⃣ Use `.pem` File for SSH Access in GitHub Actions**
 
-```bash
-ssh-keygen -t rsa -b 4096 -C "github-actions"
-```
-
-- Add the **public key** to `~/.ssh/authorized_keys` on the server.
-- Add the **private key** as a **GitHub Secret** (`SSH_PRIVATE_KEY`).
+Add the `.pem` file to GitHub secrets for SSH access to AWS instances.
 
 ### **2️⃣ Add GitHub Secrets**
 
@@ -95,19 +126,11 @@ Go to **GitHub Repository → Settings → Secrets and Variables → Actions**, 
 
 | Secret Name      | Value |
 |-----------------|---------------------------|
-| SSH_PRIVATE_KEY | Contents of `~/K3S.pem` (Private Key) |
-| HOST           | Your server’s public IP (`curl ifconfig.me`) |
-| USERNAME       | Your Linux username (e.g., `ubuntu` or `root`) |
+| SSH_PRIVATE_KEY | Contents of `aws_key.pem` (Private Key) |
+| HOST           | Your master node’s public IP (`curl ifconfig.me`) |
+| USERNAME       | Your Linux username (e.g., `ec2-user`) |
 | DOCKER_USERNAME | Your Docker Hub username |
 | DOCKER_PASSWORD | Your Docker Hub password |
-
-To get the Base64 encoded Kubernetes config, run:
-
-```bash
-cat ~/.kube/config | base64 -w 0
-```
-
-Copy the output and paste it as the value of `KUBE_CONFIG`.
 
 ### **3️⃣ Push Changes & Trigger Deployment**
 
@@ -115,7 +138,7 @@ Once the secrets are configured, push your code to GitHub, and the GitHub Action
 
 ---
 
-## **📊 Step 4: Set Up Datadog Monitoring**
+## **📊 Step 5: Set Up Datadog Monitoring**
 
 ### **1️⃣ Install Datadog Agent on Kubernetes Cluster**
 
@@ -136,7 +159,7 @@ kubectl get pods -n datadog
 
 ---
 
-## **🛠️ Step 5: Troubleshooting**
+## **🛠️ Step 6: Troubleshooting**
 
 ### **1️⃣ Check Kubernetes Logs**
 
@@ -160,7 +183,7 @@ nc -zv <your-public-ip> 22
 ### **4️⃣ Restart SSH Service (If Needed)**
 
 ```bash
-sudo systemctl restart ssh
+sudo systemctl restart sshd
 ```
 
 ---
@@ -168,7 +191,7 @@ sudo systemctl restart ssh
 ## **🎯 Conclusion**
 
 You have successfully:
-✅ Set up a **Kubernetes cluster** on bare metal.
+✅ Set up a **Kubernetes cluster** on Amazon Linux AMI.
 ✅ Deployed a **web application** using **CI/CD (GitHub Actions)**.
 ✅ Monitored the cluster with **Datadog**.
 
