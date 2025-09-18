@@ -1,0 +1,65 @@
+name: Deploy Apps Script
+
+on:
+  workflow_dispatch: # only allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install clasp
+        run: npm install -g @google/clasp
+
+      - name: Setup clasp config
+        run: |
+          # Create .clasprc.json with the format clasp expects
+          cat << EOF > ~/.clasprc.json
+          {
+            "token": {
+              "access_token": "${{ secrets.ACCESS_TOKEN }}",
+              "refresh_token": "${{ secrets.REFRESH_TOKEN }}",
+              "scope": "https://www.googleapis.com/auth/script.projects https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/drive.file",
+              "token_type": "authorized_user",
+              "expiry_date": $(date +%s)000
+            },
+            "oauth2ClientSettings": {
+              "clientId": "${{ secrets.CLIENT_ID }}",
+              "clientSecret": "${{ secrets.CLIENT_SECRET }}",
+              "redirectUri": "http://localhost"
+            },
+            "isLocalCreds": true
+          }
+          EOF
+          
+          # Create basic appsscript.json manifest file with Indian timezone and execution API access
+          echo '{
+            "timeZone": "Asia/Kolkata",
+            "dependencies": {},
+            "exceptionLogging": "STACKDRIVER",
+            "runtimeVersion": "V8",
+            "executionApi": {
+              "access": "ANYONE"
+            }
+          }' > appsscript.json
+
+      - name: Push Apps Script code
+        run: |
+          clasp clone ${{ secrets.SCRIPT_ID }}
+          clasp status
+          clasp pull
+          cp ./alert-scripts/Code.gs ./Code.gs
+          clasp push --force
+
+      - name: Create version & deploy
+        run: |
+          clasp version "GitHub Actions deployment $(date +'%Y-%m-%d %H:%M:%S')"
+          clasp deploy
